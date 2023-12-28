@@ -3,38 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Integration</title>
+    <title>City Statistics</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
+            margin: 20px;
         }
 
         h1 {
             color: #333;
-            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #666;
+            margin-top: 30px;
         }
 
         form {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
             margin-bottom: 20px;
-            width: 300px;
-            text-align: center;
         }
 
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
+            color: #333;
         }
 
         input {
@@ -42,19 +35,15 @@
             padding: 8px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
         }
 
         button {
-            background-color: #4caf50;
-            color: white;
             padding: 10px;
+            background-color: #4CAF50;
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
         }
 
         button:hover {
@@ -62,79 +51,96 @@
         }
 
         #result {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            width: 300px;
-            text-align: left;
-        }
-
-        #cacheControl {
-            background-color: #3498db;
-            color: white;
-            padding: 10px;
-            border: none;
+            background-color: #f9f9f9;
+            padding: 15px;
             border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-
-        #cacheControl:hover {
-            background-color: #2980b9;
         }
     </style>
+    <script>
+        $(document).ready(function() {
+            // Event listener for closest cities form
+            $("#closestCitiesForm").submit(function(event) {
+                event.preventDefault();
+                submitForm("/stat/closest_cities", $(this));
+            });
+
+            // Event listener for KNN reviews form
+            $("#knnReviewsForm").submit(function(event) {
+                event.preventDefault();
+                submitForm("/stat/knn_reviews", $(this));
+            });
+
+            // Event listener for flush cache form
+            $("#flushCacheForm").submit(function(event) {
+                event.preventDefault();
+                submitForm("/flush_cache", $(this));
+            });
+
+            // Event listener for toggle cache form
+            $("#toggleCacheForm").submit(function(event) {
+                event.preventDefault();
+                submitForm("/toggle_cache", $(this));
+            });
+
+            function submitForm(url, form) {
+                $.ajax({
+                    type: form.attr("method"),
+                    url: form.attr("action"),
+                    data: form.serialize(),
+                    success: function(data) {
+                        displayResults(data);
+                    },
+                    error: function(error) {
+                        console.error("Error:", error);
+                    }
+                });
+            }
+
+            function displayResults(data) {
+                $("#result").html("<pre>" + JSON.stringify(data, null, 2) + "</pre>");
+            }
+        });
+    </script>
 </head>
 <body>
-    <h1>API Integration</h1>
+    <h1>Zhou Pengxiang 76405</h1>
 
-    <p style="margin-bottom: 10px;">76405    Pengxiang Zhou</p>
+    <!-- Flush Cache button -->
+    <form id="flushCacheForm" action="/flush_cache" method="post">
+        <button type="submit">Clear Cache</button>
+    </form>
 
-    <form id="closestCitiesForm">
+    <!-- Toggle Cache button -->
+    <form id="toggleCacheForm" action="/toggle_cache" method="get">
+        <button type="submit">Toggle Redis Cache</button>
+    </form>
+
+    <h2>Question 10</h2>
+    <!-- Form for closest cities -->
+    <form id="closestCitiesForm" action="/stat/closest_cities" method="get">
         <label for="city">City Name:</label>
         <input type="text" id="city" name="city" required>
-        <label for="pageSize">Page Size:</label>
-        <input type="number" id="pageSize" name="pageSize" value="50" required>
-        <button type="button" onclick="getClosestCities()">Get Closest Cities</button>
+        <label for="page_size">Page Size:</label>
+        <input type="number" id="page_size" name="page_size" value="50" min="1">
+        <label for="page">Page Number:</label>
+        <input type="number" id="page" name="page" value="0" min="0">
+        <button type="submit">Get Closest Cities</button>
     </form>
 
-    <div id="result"></div>
-
-    <form id="knnReviewsForm">
-        <label for="knnClasses">Number of Classes:</label>
-        <input type="number" id="knnClasses" name="knnClasses" value="6" required>
-        <label for="kParameter">K Parameter:</label>
-        <input type="number" id="kParameter" name="kParameter" value="3" required>
-        <label for="popularWords">Number of Popular Words:</label>
-        <input type="number" id="popularWords" name="popularWords" value="100" required>
-        <button type="button" onclick="getKNNReviews()">Get KNN Reviews</button>
+    <h2>Question 11</h2>
+    <!-- Form for KNN reviews -->
+    <form id="knnReviewsForm" action="/stat/knn_reviews" method="get">
+        <label for="classes">Number of Classes:</label>
+        <input type="number" id="classes" name="classes" value="6" min="1">
+        <label for="k">K Value:</label>
+        <input type="number" id="k" name="k" value="3" min="1">
+        <label for="words">Number of Words:</label>
+        <input type="number" id="words" name="words" value="100" min="1">
+        <button type="submit">Get KNN Reviews</button>
     </form>
 
-    <div id="result"></div>
-
-    <button id="cacheControl" onclick="flushCache()">Flush Cache</button>
-
-    <script>
-        function getClosestCities() {
-            // Implement the logic to make the API call for Question 10
-            // Update the result element with the response
-        }
-
-        function getKNNReviews() {
-            // Implement the logic to make the API call for Question 11
-            // Update the result element with the response
-        }
-
-        function flushCache() {
-            // Implement the logic to make the API call to flush the cache
-            alert("Cache flushed successfully");
-        }
-    </script>
+    <div id="result">
+        <!-- Display results here -->
+    </div>
 </body>
 </html>
-
-
-
-
-
